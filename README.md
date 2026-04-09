@@ -104,6 +104,48 @@
 
 > **Technical Note:** This screenshot demonstrates the shape rendering engine. All shapes (rectangle, line, circle) use real-time preview — as you drag, the shape is continuously redrawn using `ImageData` snapshots to restore the canvas to its pre-drag state on each frame, then drawing the shape at the new cursor position. This produces smooth, flicker-free shape rendering without a secondary preview canvas.
 
+### 🔒 PIN Protection Gate — Zero-Trust Room Security
+<p align="center">
+  <img src="screenshots/pin_entry.png" alt="PIN Entry Security Gate" width="700" />
+</p>
+
+> **Security Architecture:** Rooms can be protected with an optional 4–6 digit PIN, set at creation time. The PIN is embedded in the URL hash fragment (`#pin=XXXX`), which is **never sent to any server** — hash fragments stay client-side per RFC 3986. When a guest opens a PIN-protected room link, they see this glassmorphism gate modal. The PIN is verified locally before the PeerJS connection is established, providing a zero-trust access control layer without any backend authentication. Failed attempts show a shake animation and error toast. This approach ensures:
+> - 🔐 **No server-side PIN storage** — PIN lives only in the browser URL
+> - ⚡ **Instant verification** — no network round-trip for auth
+> - 🎯 **Simple UX** — host just toggles a switch, guest enters 4 digits
+
+### 🔷 Smart Shape Recognition — AI-Powered Geometry Snapping
+<p align="center">
+  <img src="screenshots/smart_shapes.png" alt="Smart Shape Recognition" width="700" />
+</p>
+
+> **Engineering Deep Dive:** The shape recognition engine analyzes freehand strokes using geometric heuristics. When a user draws a rough circle, rectangle, or triangle, the engine detects the intent and snaps it to a perfect geometric form with a satisfying yellow glow animation. The algorithm works by:
+> 1. **Circularity test** — computes the ratio of area to perimeter² and compares against π/4
+> 2. **Corner detection** — identifies sharp angle changes to find rectangle/triangle vertices  
+> 3. **Convex hull fitting** — snaps detected shapes to their ideal geometric counterparts
+> 4. **Animation feedback** — a `shapeSnap` keyframe animation (scale 0→1.2→1 with opacity fade) provides satisfying visual confirmation
+>
+> All shape recognition runs locally at ~2ms per stroke — fast enough for real-time use. Recognized shapes are transmitted to peers as geometric primitives, ensuring pixel-perfect rendering on both sides.
+
+### 🎤 Voice-to-Handwriting — Speak and Watch It Write
+<p align="center">
+  <img src="screenshots/voice_input_hi.png" alt="Voice Input — Hi, Hello" width="700" />
+</p>
+
+> **Example 1: Quick Commands** — Tap the microphone button and say *"Hi"* or *"Hello"*. The Web Speech API transcribes your voice in real-time, and our custom handwriting renderer converts the text into natural-looking pen strokes directly on the canvas. Each letter is drawn stroke-by-stroke using a point-batching animation system that simulates human writing speed and pressure variation.
+
+<p align="center">
+  <img src="screenshots/voice_input_name.png" alt="Voice Input — Hello, my name is Ujwal" width="700" />
+</p>
+
+> **Example 2: Full Sentences** — Say *"Hello, my name is Ujwal"* and watch the entire sentence appear in flowing handwritten script. The rendering engine handles:
+> - **Variable stroke width** — simulates pen pressure (thicker on downstrokes, thinner on curves)
+> - **Letter spacing** — natural kerning with slight randomization for realism
+> - **Special characters** — commas, periods, and punctuation are fully supported
+> - **Real-time sync** — voice-drawn text is transmitted to peers via the P2P protocol, appearing on their canvas with the same handwriting animation
+>
+> **Technical Stack:** `Web Speech API` → text transcription → custom `handwritingRenderer.js` → Konva.Line point generation → `requestAnimationFrame` sequential batching → canvas rendering. The entire pipeline runs at 60fps with zero external dependencies.
+
 ---
 
 ## ✨ Feature Matrix
@@ -130,6 +172,9 @@
 | 💾 **Room Persistence** | Supabase auto-save every 10s, snapshot history | — |
 | 🔒 **PIN Protection** | Optional 4-6 digit PIN in URL hash, client-side only | — |
 | 📱 **Mobile Toolbar** | Bottom sheet drawer with floating active tool pill | — |
+| 🎤 **Voice-to-Handwriting** | Web Speech API → custom renderer → animated pen strokes on canvas | — |
+| 🔷 **Smart Shape Recognition** | Freehand → circle/rect/triangle auto-snap with animation | — |
+| 📌 **Voice Note Pins** | Drop audio recordings as draggable pins on the canvas | — |
 
 ---
 
