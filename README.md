@@ -104,47 +104,67 @@
 
 > **Technical Note:** This screenshot demonstrates the shape rendering engine. All shapes (rectangle, line, circle) use real-time preview — as you drag, the shape is continuously redrawn using `ImageData` snapshots to restore the canvas to its pre-drag state on each frame, then drawing the shape at the new cursor position. This produces smooth, flicker-free shape rendering without a secondary preview canvas.
 
-### 🔒 PIN Protection Gate — Zero-Trust Room Security
+### 🔒 PIN Protection — Zero-Trust Room Security
+
+#### Step 1: Host Creates a Protected Room
 <p align="center">
-  <img src="screenshots/pin_entry.png" alt="PIN Entry Security Gate" width="700" />
+  <img src="screenshots/pin_creation.png" alt="Creating a PIN-Protected Room" width="700" />
 </p>
 
-> **Security Architecture:** Rooms can be protected with an optional 4–6 digit PIN, set at creation time. The PIN is embedded in the URL hash fragment (`#pin=XXXX`), which is **never sent to any server** — hash fragments stay client-side per RFC 3986. When a guest opens a PIN-protected room link, they see this glassmorphism gate modal. The PIN is verified locally before the PeerJS connection is established, providing a zero-trust access control layer without any backend authentication. Failed attempts show a shake animation and error toast. This approach ensures:
-> - 🔐 **No server-side PIN storage** — PIN lives only in the browser URL
-> - ⚡ **Instant verification** — no network round-trip for auth
-> - 🎯 **Simple UX** — host just toggles a switch, guest enters 4 digits
+> **How It Works:** The host toggles "Add PIN protection" on the landing page, enters a 4–6 digit code (e.g., `1234`), and clicks **"Create Protected Room"**. The yellow 🔒 button and label confirm PIN mode is active. Notice the security note: *"PIN stays in URL — never sent to any server."*
 
-### 🔷 Smart Shape Recognition — AI-Powered Geometry Snapping
+#### Step 2: Guest Encounters the Security Gate
 <p align="center">
-  <img src="screenshots/smart_shapes.png" alt="Smart Shape Recognition" width="700" />
+  <img src="screenshots/pin_entry.png" alt="PIN Entry Gate — Empty" width="700" />
 </p>
 
-> **Engineering Deep Dive:** The shape recognition engine analyzes freehand strokes using geometric heuristics. When a user draws a rough circle, rectangle, or triangle, the engine detects the intent and snaps it to a perfect geometric form with a satisfying yellow glow animation. The algorithm works by:
-> 1. **Circularity test** — computes the ratio of area to perimeter² and compares against π/4
-> 2. **Corner detection** — identifies sharp angle changes to find rectangle/triangle vertices  
-> 3. **Convex hull fitting** — snaps detected shapes to their ideal geometric counterparts
-> 4. **Animation feedback** — a `shapeSnap` keyframe animation (scale 0→1.2→1 with opacity fade) provides satisfying visual confirmation
+> **Security Gate Modal:** When a guest opens the shared room link, they're greeted by this glassmorphism modal — a dark frosted-glass card with the 🔒 lock icon, "PIN Protected Room" title, and an input field. The room's whiteboard is completely hidden behind this gate until the correct PIN is entered.
+
+#### Step 3: PIN Verification
+<p align="center">
+  <img src="screenshots/pin_verify.png" alt="PIN Entry — Code Entered" width="700" />
+</p>
+
+> **Client-Side Verification:** The guest types `1 2 3 4` (letter-spaced for readability) and clicks the yellow **"Join Room"** button. The PIN is embedded in the URL hash fragment (`#pin=XXXX`) which is **never sent to any server** per RFC 3986. Verification happens entirely in the browser — wrong PINs trigger a shake animation. This approach provides:
+> - 🔐 **No server-side PIN storage** — PIN lives only in the browser URL hash
+> - ⚡ **Instant verification** — zero network round-trips for authentication
+> - 🎯 **Simple UX** — host toggles a switch, guest enters 4 digits, done
+
+### 🔷 Smart Shape Recognition — Freehand to Perfect Geometry
+
+<p align="center">
+  <img src="screenshots/smart_shapes.png" alt="Smart Shape — Auto-Snapped Ellipse" width="700" />
+</p>
+
+> **Live Demo:** A rough freehand circle was drawn on the canvas, and the shape recognition engine instantly detected the intent and snapped it into a **perfect geometric ellipse** in yellow (#FACC15). Notice the toolbar on the left showing the Smart Shapes tool (✨ sparkle icon) is active. The shape recognition algorithm:
+> 1. **Circularity test** — computes area-to-perimeter² ratio against π/4 threshold
+> 2. **Corner detection** — identifies sharp angle changes for rectangle/triangle vertices
+> 3. **Convex hull fitting** — snaps detected shapes to ideal geometric counterparts
+> 4. **Visual feedback** — a `shapeSnap` keyframe animation (scale 0→1.2→1) provides satisfying snap confirmation
 >
-> All shape recognition runs locally at ~2ms per stroke — fast enough for real-time use. Recognized shapes are transmitted to peers as geometric primitives, ensuring pixel-perfect rendering on both sides.
+> All recognition runs locally at ~2ms per stroke. Shapes are transmitted to peers as geometric primitives for pixel-perfect rendering on both sides.
 
 ### 🎤 Voice-to-Handwriting — Speak and Watch It Write
+
+#### Example 1: "Hi" — Quick Voice Command
 <p align="center">
-  <img src="screenshots/voice_input_hi.png" alt="Voice Input — Hi, Hello" width="700" />
+  <img src="screenshots/voice_input_hi.png" alt="Voice Input — Hi written on canvas" width="700" />
 </p>
 
-> **Example 1: Quick Commands** — Tap the microphone button and say *"Hi"* or *"Hello"*. The Web Speech API transcribes your voice in real-time, and our custom handwriting renderer converts the text into natural-looking pen strokes directly on the canvas. Each letter is drawn stroke-by-stroke using a point-batching animation system that simulates human writing speed and pressure variation.
+> **Voice Input Demo:** The microphone tool (🎤) is activated from the toolbar. Speaking *"Hi"* triggers the Web Speech API → custom handwriting renderer pipeline. The result: **"Hi" appears handwritten in blue** on the canvas alongside the previously drawn yellow ellipse shape. Each letter is rendered stroke-by-stroke using a point-batching animation system that simulates natural human writing speed and pen pressure variation.
 
+#### Example 2: "Hello, my name is Ujwal" — Full Sentence
 <p align="center">
-  <img src="screenshots/voice_input_name.png" alt="Voice Input — Hello, my name is Ujwal" width="700" />
+  <img src="screenshots/voice_input_name.png" alt="Voice Input — Hi and Ujwal on canvas with shapes" width="700" />
 </p>
 
-> **Example 2: Full Sentences** — Say *"Hello, my name is Ujwal"* and watch the entire sentence appear in flowing handwritten script. The rendering engine handles:
+> **Full Sentence Demo:** A longer voice input — *"Hello, my name is Ujwal"* — showcases the handwriting engine's ability to handle full sentences. The canvas now shows **"Hi" in blue** and **"U" (Ujwal) in green** alongside smart shapes, demonstrating multi-color voice input with the complete drawing toolkit. The rendering engine handles:
 > - **Variable stroke width** — simulates pen pressure (thicker on downstrokes, thinner on curves)
 > - **Letter spacing** — natural kerning with slight randomization for realism
-> - **Special characters** — commas, periods, and punctuation are fully supported
-> - **Real-time sync** — voice-drawn text is transmitted to peers via the P2P protocol, appearing on their canvas with the same handwriting animation
+> - **Special characters** — commas, periods, and punctuation fully supported
+> - **Real-time sync** — voice-drawn text transmits to peers via P2P protocol with the same handwriting animation
 >
-> **Technical Stack:** `Web Speech API` → text transcription → custom `handwritingRenderer.js` → Konva.Line point generation → `requestAnimationFrame` sequential batching → canvas rendering. The entire pipeline runs at 60fps with zero external dependencies.
+> **Technical Pipeline:** `Web Speech API` → text transcription → custom `handwritingRenderer.js` → Konva.Line point generation → `requestAnimationFrame` sequential batching → canvas rendering @ 60fps with zero external dependencies.
 
 ---
 
